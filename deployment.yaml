@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: weatherapi-deployment
+    annotations:
+        kubernetes.io/change-cause: "Add log"
+spec:
+    replicas: 2
+    selector:
+        matchLabels:
+            app: weatherapi
+    template:
+        metadata:
+            name: weatherapiapp
+            labels:
+                env: prod
+                app: weatherapi
+                app.kubernetes.io/name: weatherapi
+        spec:
+            containers:
+              - name: weatherapi
+                image: quangnt1702/weatherapi-image:v2
+                ports:
+                  - containerPort: 80
+                    name: http-web-api
+                resources:
+                    requests:
+                        cpu: 100m
+                        memory: 100Mi
+                    limits:
+                        cpu: 200m
+                        memory: 200Mi
+                env:
+                  - name: ASPNETCORE_URLS
+                    value: http://+:80
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+    name: weatherapi-bl-service
+spec: 
+    selector: 
+        app.kubernetes.io/name: weatherapi
+    ports:
+      - name: weatherapi-app-port
+        protocol: TCP
+        port: 8080
+        targetPort: 80
+    type: LoadBalancer
